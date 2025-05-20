@@ -1,3 +1,4 @@
+print("Starting Flask app...")
 from flask import Flask, render_template
 from flask_socketio import SocketIO, send
 
@@ -14,5 +15,8 @@ def handle_message(msg):
     print('Сообщение:', msg)
     send(msg, broadcast=True)
 
-if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    print("Running app...")
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port, debug=True)
