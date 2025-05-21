@@ -1,60 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Веб-чат с именами</title>
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <title>Вход</title>
 </head>
 <body>
-    <h2>Простой Веб-Чат</h2>
-
-    <div id="login-section">
-        <input id="username" placeholder="Введите имя">
-        <button onclick="enterChat()">Войти в чат</button>
-    </div>
-
-    <div id="chat-section" style="display: none;">
-        <div id="chat" style="border:1px solid #ccc; height:300px; overflow:auto; padding:10px;"></div>
-
-        <input id="message" placeholder="Введите сообщение">
-        <button onclick="sendMessage()">Отправить</button>
-    </div>
-
-    <script>
-        const socket = io();
-        let username = '';
-
-        function enterChat() {
-            const nameInput = document.getElementById('username');
-            if (nameInput.value.trim() === '') {
-                alert('Пожалуйста, введите имя!');
-                return;
-            }
-            username = nameInput.value.trim();
-
-            // Показываем чат, скрываем форму входа
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('chat-section').style.display = 'block';
-        }
-
-        socket.on('connect', () => {
-            console.log("Подключено к серверу.");
-        });
-
-        socket.on('message', (msg) => {
-            const chat = document.getElementById('chat');
-            chat.innerHTML += `<div>${msg}</div>`;
-            chat.scrollTop = chat.scrollHeight;
-        });
-
-        function sendMessage() {
-            const input = document.getElementById('message');
-            const text = input.value.trim();
-            if (text && username) {
-                socket.send(`${username}: ${text}`);
-                input.value = '';
-            }
-        }
-    </script>
+    <h2>Введите свой UserID:</h2>
+    <form method="POST">
+        <input type="text" name="user_id" required>
+        <button type="submit">Войти</button>
+    </form>
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
 </body>
 </html>

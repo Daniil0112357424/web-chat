@@ -1,22 +1,58 @@
-print("Starting Flask app...")
-from flask import Flask, render_template
-from flask_socketio import SocketIO, send
+from flask import Flask, render_template, request, redirect, url_for, session
+from flask_socketio import SocketIO, emit
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="*")  # Можно ограничить по домену
+socketio = SocketIO(app)
 
-@app.route('/')
+# Храним user_id -> session_id
+user_sessions = {}
+
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template('index.html')
+    if request.method == "POST":
+        user_id = request.form.get("user_id")
+        if not user_id:
+            return render_template("index.html", error="Введите UserID")
+        session["user_id"] = user_id
+        return redirect(url_for("chat"))
+    return render_template("index.html")
 
-@socketio.on('message')
-def handle_message(msg):
-    print('Сообщение:', msg)
-    send(msg, broadcast=True)
+@app.route("/chat")
+def chat():
+    if "user_id" not in session:
+        return redirect(url_for("index"))
+    return render_template("chat.html", user_id=session["user_id"])
+
+@socketio.on("connect")
+def handle_connect():
+    user_id = session.get("user_id")
+    if user_id:
+        user_sessions[user_id] = request.sid
+        print(f"{user_id} подключился (session {request.sid})")
+
+@socketio.on("send_message")
+def handle_send_message(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to_user")
+    msg = data.get("message")
+
+    if from_user and to_user and msg:
+        to_session = user_sessions.get(to_user)
+        if to_session:
+            emit("receive_message", {"from": from_user, "message": msg}, room=to_session)
+            emit("receive_message", {"from": from_user, "message": msg}, room=request.sid)  # Чтобы видеть своё сообщение
+        else:
+            emit("receive_message", {"from": "System", "message": f"Пользователь '{to_user}' не найден или не в сети."}, room=request.sid)
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    for uid, sid in list(user_sessions.items()):
+        if sid == request.sid:
+            print(f"{uid} отключился")
+            del user_sessions[uid]
 
 if __name__ == "__main__":
-    print("Running app...")
-    import os
     port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host="0.0.0.0", port=port, debug=True)
+    socketio.run(app, host="0.0.0.0", port=port)

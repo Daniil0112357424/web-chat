@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Личный чат</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h3>Ваш UserID: {{ user_id }}</h3>
+
+    <input type="text" id="to_user" placeholder="Кому (UserID)" required>
+    <br><br>
+    <input type="text" id="message" placeholder="Ваше сообщение">
+    <button onclick="sendMessage()">Отправить</button>
+
+    <ul id="messages"></ul>
+
+    <script>
+        var socket = io();
+
+        function sendMessage() {
+            const to_user = document.getElementById("to_user").value.trim();
+            const message = document.getElementById("message").value.trim();
+            if (to_user && message) {
+                socket.emit("send_message", { to_user: to_user, message: message });
+                document.getElementById("message").value = "";
+            }
+        }
+
+        socket.on("receive_message", function(data) {
+            const item = document.createElement("li");
+            item.textContent = data.from + ": " + data.message;
+            document.getElementById("messages").appendChild(item);
+        });
+    </script>
+</body>
+</html>
