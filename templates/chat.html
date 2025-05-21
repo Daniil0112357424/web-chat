@@ -130,7 +130,6 @@
 
             if (!to_user) return;
 
-            // Если есть и сообщение, и файл — отправляем оба
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -147,6 +146,39 @@
                 document.getElementById("message").value = "";
             }
         }
+
+        function loadHistory() {
+            const to_user = document.getElementById("to_user").value.trim();
+            if (to_user) {
+                socket.emit("get_history", { to_user: to_user });
+            }
+        }
+
+        document.getElementById("to_user").addEventListener("change", function() {
+            document.getElementById("messages").innerHTML = "";
+            loadHistory();
+        });
+
+        // Загружаем историю при первом открытии, если поле заполнено
+        window.onload = function() {
+            if (document.getElementById("to_user").value.trim()) {
+                loadHistory();
+            }
+        };
+
+        socket.on("chat_history", function(data) {
+            const messages = document.getElementById("messages");
+            messages.innerHTML = "";
+            data.history.forEach(function(msg) {
+                const item = document.createElement("li");
+                if (msg.type === "text") {
+                    item.textContent = msg.from + ": " + msg.content;
+                } else if (msg.type === "image") {
+                    item.innerHTML = `<b>${msg.from}:</b><br><img src="${msg.content}" alt="Фото">`;
+                }
+                messages.appendChild(item);
+            });
+        });
 
         socket.on("receive_message", function(data) {
             const item = document.createElement("li");

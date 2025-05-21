@@ -9,6 +9,12 @@ socketio = SocketIO(app)
 # Храним user_id -> session_id
 user_sessions = {}
 
+# Храним историю: (user1, user2) -> [ {from, to, type, content}, ... ]
+chat_history = {}
+
+def get_history_key(user1, user2):
+    return tuple(sorted([user1, user2]))
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -39,10 +45,18 @@ def handle_send_message(data):
     msg = data.get("message")
 
     if from_user and to_user and msg:
+        # Сохраняем в историю
+        key = get_history_key(from_user, to_user)
+        chat_history.setdefault(key, []).append({
+            "from": from_user,
+            "to": to_user,
+            "type": "text",
+            "content": msg
+        })
         to_session = user_sessions.get(to_user)
         if to_session:
             emit("receive_message", {"from": from_user, "message": msg}, room=to_session)
-            emit("receive_message", {"from": from_user, "message": msg}, room=request.sid)  # Чтобы видеть своё сообщение
+            emit("receive_message", {"from": from_user, "message": msg}, room=request.sid)
         else:
             emit("receive_message", {"from": "System", "message": f"Пользователь '{to_user}' не найден или не в сети."}, room=request.sid)
 
@@ -52,12 +66,29 @@ def handle_send_image(data):
     to_user = data.get("to_user")
     image = data.get("image")
     if from_user and to_user and image:
+        # Сохраняем в историю
+        key = get_history_key(from_user, to_user)
+        chat_history.setdefault(key, []).append({
+            "from": from_user,
+            "to": to_user,
+            "type": "image",
+            "content": image
+        })
         to_session = user_sessions.get(to_user)
         if to_session:
             emit("receive_image", {"from": from_user, "image": image}, room=to_session)
             emit("receive_image", {"from": from_user, "image": image}, room=request.sid)
         else:
             emit("receive_message", {"from": "System", "message": f"Пользователь '{to_user}' не найден или не в сети."}, room=request.sid)
+
+@socketio.on("get_history")
+def handle_get_history(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to_user")
+    if from_user and to_user:
+        key = get_history_key(from_user, to_user)
+        history = chat_history.get(key, [])
+        emit("chat_history", {"history": history})
 
 @socketio.on("disconnect")
 def handle_disconnect():
