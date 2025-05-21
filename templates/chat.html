@@ -15,6 +15,32 @@
             align-items: center;
             min-height: 100vh;
         }
+        .header-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 12px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            margin-bottom: 12px;
+        }
+        .header-bar img {
+            height: 48px;
+            width: 48px;
+            border-radius: 12px;
+            margin-right: 16px;
+            object-fit: cover;
+            background: #f4f7fa;
+        }
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #a04ed1;
+            letter-spacing: 1px;
+        }
         h3 {
             margin-top: 40px;
             color: #333;
@@ -104,10 +130,23 @@
                 flex-direction: column;
                 gap: 16px;
             }
+            .header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 12px 12px;
+            }
+            .header-bar img {
+                margin-bottom: 8px;
+                margin-right: 0;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="header-bar">
+        <img src="icon.jpeg" alt="Лого">
+        <span class="header-title">ВМаксате</span>
+    </div>
     <h3>Ваш UserID: {{ user_id }}</h3>
     <div id="main-chat-flex">
         <div id="chat-container">
