@@ -2,15 +2,74 @@
 <html>
 <head>
     <title>Вход</title>
+    <style>
+        body {
+            background: #f4f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h2 {
+            margin-top: 60px;
+            color: #333;
+        }
+        #login-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+            margin-top: 24px;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus {
+            border: 1.5px solid #0078d7;
+        }
+        button {
+            background: #0078d7;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #005fa3;
+        }
+        .error-message {
+            color: #d32f2f;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <h2>Введите свой UserID:</h2>
-    <form method="POST">
-        <input type="text" name="user_id" required>
-        <button type="submit">Войти</button>
-    </form>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    <div id="login-container">
+        <form method="POST">
+            <input type="text" name="user_id" placeholder="UserID" required>
+            <button type="submit">Войти</button>
+        </form>
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %}
+    </div>
 </body>
 </html>
