@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>ВМаксате</title>
-    <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
     <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
@@ -29,12 +28,15 @@
             margin-bottom: 12px;
         }
         .header-bar img {
-            height: 48px;
             width: 48px;
+            height: 48px;
+            max-width: 48px;
+            max-height: 48px;
             border-radius: 12px;
             margin-right: 16px;
             object-fit: cover;
             background: #f4f7fa;
+            box-shadow: 0 2px 8px rgba(160,78,209,0.08);
         }
         .header-title {
             font-size: 2rem;
@@ -146,7 +148,6 @@
 <body>
     <div class="header-bar">
         <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
-        <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
         <span class="header-title">ВМаксате</span>
     </div>
     <h3>Ваш UserID: {{ user_id }}</h3>
