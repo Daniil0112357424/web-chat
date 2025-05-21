@@ -3,17 +3,82 @@
 <head>
     <title>Личный чат</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body {
+            background: #f4f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        h3 {
+            margin-top: 40px;
+            color: #333;
+        }
+        #chat-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px 24px 24px;
+            margin-top: 24px;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        input[type="text"]:focus {
+            border: 1.5px solid #0078d7;
+        }
+        button {
+            background: #0078d7;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #005fa3;
+        }
+        #messages {
+            list-style: none;
+            padding: 0;
+            margin-top: 18px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        #messages li {
+            background: #f0f4f8;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: #222;
+            word-break: break-word;
+        }
+    </style>
 </head>
 <body>
     <h3>Ваш UserID: {{ user_id }}</h3>
-
-    <input type="text" id="to_user" placeholder="Кому (UserID)" required>
-    <br><br>
-    <input type="text" id="message" placeholder="Ваше сообщение">
-    <button onclick="sendMessage()">Отправить</button>
-
-    <ul id="messages"></ul>
-
+    <div id="chat-container">
+        <input type="text" id="to_user" placeholder="Кому (UserID)" required>
+        <input type="text" id="message" placeholder="Ваше сообщение">
+        <button onclick="sendMessage()">Отправить</button>
+        <ul id="messages"></ul>
+    </div>
     <script>
         var socket = io();
 
