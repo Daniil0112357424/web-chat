@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>ВМаксате</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
@@ -56,26 +57,19 @@
             gap: 32px;
             margin-top: 32px;
         }
-        #chat-container {
+        #chat-container, #messages-container {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 32px 24px 24px 24px;
             width: 350px;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: stretch;
         }
         #messages-container {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
-            width: 350px;
             min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
         }
         input[type="text"] {
             padding: 10px;
@@ -132,6 +126,8 @@
             #main-chat-flex {
                 flex-direction: column;
                 gap: 16px;
+                width: 100%;
+                align-items: center;
             }
             .header-bar {
                 flex-direction: column;
@@ -141,6 +137,35 @@
             .header-bar img {
                 margin-bottom: 8px;
                 margin-right: 0;
+            }
+            #chat-container, #messages-container {
+                width: 95vw;
+                min-width: 0;
+                padding: 18px 8px 16px 8px;
+                box-sizing: border-box;
+            }
+            h3 {
+                margin-top: 16px;
+                font-size: 1.1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .header-bar img {
+                width: 36px;
+                height: 36px;
+                max-width: 36px;
+                max-height: 36px;
+            }
+            .header-title {
+                font-size: 1.2rem;
+            }
+            #chat-container, #messages-container {
+                width: 99vw;
+                padding: 10px 2vw 10px 2vw;
+            }
+            #messages img {
+                max-width: 120px;
+                max-height: 120px;
             }
         }
     </style>
