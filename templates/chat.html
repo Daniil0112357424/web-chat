@@ -113,8 +113,7 @@
             <input type="text" id="to_user" placeholder="Кому (UserID)" required>
             <input type="text" id="message" placeholder="Ваше сообщение">
             <input type="file" id="image_input" accept="image/*">
-            <button onclick="sendMessage()">Отправить</button>
-            <button type="button" onclick="sendImage()">Отправить фото</button>
+            <button onclick="send()">Отправить</button>
         </div>
         <div id="messages-container">
             <ul id="messages"></ul>
@@ -123,26 +122,29 @@
     <script>
         var socket = io();
 
-        function sendMessage() {
+        function send() {
             const to_user = document.getElementById("to_user").value.trim();
             const message = document.getElementById("message").value.trim();
-            if (to_user && message) {
-                socket.emit("send_message", { to_user: to_user, message: message });
-                document.getElementById("message").value = "";
-            }
-        }
-
-        function sendImage() {
-            const to_user = document.getElementById("to_user").value.trim();
             const fileInput = document.getElementById("image_input");
             const file = fileInput.files[0];
-            if (to_user && file) {
+
+            if (!to_user) return;
+
+            // Если есть и сообщение, и файл — отправляем оба
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     socket.emit("send_image", { to_user: to_user, image: e.target.result });
+                    if (message) {
+                        socket.emit("send_message", { to_user: to_user, message: message });
+                    }
                 };
                 reader.readAsDataURL(file);
                 fileInput.value = "";
+                document.getElementById("message").value = "";
+            } else if (message) {
+                socket.emit("send_message", { to_user: to_user, message: message });
+                document.getElementById("message").value = "";
             }
         }
 
