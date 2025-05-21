@@ -46,6 +46,19 @@ def handle_send_message(data):
         else:
             emit("receive_message", {"from": "System", "message": f"Пользователь '{to_user}' не найден или не в сети."}, room=request.sid)
 
+@socketio.on("send_image")
+def handle_send_image(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to_user")
+    image = data.get("image")
+    if from_user and to_user and image:
+        to_session = user_sessions.get(to_user)
+        if to_session:
+            emit("receive_image", {"from": from_user, "image": image}, room=to_session)
+            emit("receive_image", {"from": from_user, "image": image}, room=request.sid)
+        else:
+            emit("receive_message", {"from": "System", "message": f"Пользователь '{to_user}' не найден или не в сети."}, room=request.sid)
+
 @socketio.on("disconnect")
 def handle_disconnect():
     for uid, sid in list(user_sessions.items()):

@@ -59,6 +59,9 @@
         input[type="text"]:focus {
             border: 1.5px solid #0078d7;
         }
+        input[type="file"] {
+            margin-bottom: 12px;
+        }
         button {
             background: #0078d7;
             color: #fff;
@@ -68,6 +71,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: background 0.2s;
+            margin-bottom: 8px;
         }
         button:hover {
             background: #005fa3;
@@ -87,6 +91,13 @@
             color: #222;
             word-break: break-word;
         }
+        #messages img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 8px;
+            display: block;
+            margin-top: 6px;
+        }
         @media (max-width: 800px) {
             #main-chat-flex {
                 flex-direction: column;
@@ -101,7 +112,9 @@
         <div id="chat-container">
             <input type="text" id="to_user" placeholder="Кому (UserID)" required>
             <input type="text" id="message" placeholder="Ваше сообщение">
+            <input type="file" id="image_input" accept="image/*">
             <button onclick="sendMessage()">Отправить</button>
+            <button type="button" onclick="sendImage()">Отправить фото</button>
         </div>
         <div id="messages-container">
             <ul id="messages"></ul>
@@ -119,9 +132,29 @@
             }
         }
 
+        function sendImage() {
+            const to_user = document.getElementById("to_user").value.trim();
+            const fileInput = document.getElementById("image_input");
+            const file = fileInput.files[0];
+            if (to_user && file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    socket.emit("send_image", { to_user: to_user, image: e.target.result });
+                };
+                reader.readAsDataURL(file);
+                fileInput.value = "";
+            }
+        }
+
         socket.on("receive_message", function(data) {
             const item = document.createElement("li");
             item.textContent = data.from + ": " + data.message;
+            document.getElementById("messages").appendChild(item);
+        });
+
+        socket.on("receive_image", function(data) {
+            const item = document.createElement("li");
+            item.innerHTML = `<b>${data.from}:</b><br><img src="${data.image}" alt="Фото">`;
             document.getElementById("messages").appendChild(item);
         });
     </script>
