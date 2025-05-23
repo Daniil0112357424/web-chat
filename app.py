@@ -6,17 +6,18 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
-# Храним user_id -> session_id
 user_sessions = {}
-
-# Храним историю: (user1, user2) -> [ {from, to, type, content}, ... ]
 chat_history = {}
 
 def get_history_key(user1, user2):
     return tuple(sorted([user1, user2]))
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def index():
+    return render_template("index2.html")  # Главная страница
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
     if request.method == "POST":
         user_id = request.form.get("user_id")
         if not user_id:
@@ -28,7 +29,7 @@ def index():
 @app.route("/chat")
 def chat():
     if "user_id" not in session:
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
     return render_template("chat.html", user_id=session["user_id"])
 
 @socketio.on("connect")
@@ -45,7 +46,6 @@ def handle_send_message(data):
     msg = data.get("message")
 
     if from_user and to_user and msg:
-        # Сохраняем в историю
         key = get_history_key(from_user, to_user)
         chat_history.setdefault(key, []).append({
             "from": from_user,
@@ -66,7 +66,6 @@ def handle_send_image(data):
     to_user = data.get("to_user")
     image = data.get("image")
     if from_user and to_user and image:
-        # Сохраняем в историю
         key = get_history_key(from_user, to_user)
         chat_history.setdefault(key, []).append({
             "from": from_user,

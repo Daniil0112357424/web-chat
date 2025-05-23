@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ВМаксате — Главная</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
+    <style>
+        body {
+            background: #f4f7fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .header-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 12px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            margin-bottom: 12px;
+        }
+        .header-bar img {
+            width: 48px;
+            height: 48px;
+            max-width: 48px;
+            max-height: 48px;
+            border-radius: 12px;
+            margin-right: 16px;
+            margin-left: 16px;
+            object-fit: cover;
+            background: #f4f7fa;
+            box-shadow: 0 2px 8px rgba(160,78,209,0.08);
+        }
+        .header-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #a04ed1;
+            letter-spacing: 1px;
+        }
+        .main-content {
+            margin-top: 60px;
+            text-align: center;
+        }
+        .main-content h1 {
+            font-size: 2.2rem;
+            color: #a04ed1;
+            margin-bottom: 16px;
+        }
+        .main-content p {
+            font-size: 1.2rem;
+            color: #444;
+            margin-bottom: 32px;
+        }
+        .main-content .btn {
+            background: #0078d7;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 36px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .main-content .btn:hover {
+            background: #005fa3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
+        <span class="header-title">ВМаксате</span>
+    </div>
+    <div class="main-content">
+        <h1>Добро пожаловать в ВМаксате!</h1>
+        <p>Простой и удобный мессенджер для общения.<br>Нажмите кнопку ниже, чтобы перейти в чат.</p>
+        <a href="{{ url_for('chat') }}" class="btn">Мессенджер</a>
+    </div>
+</body>
+</html>

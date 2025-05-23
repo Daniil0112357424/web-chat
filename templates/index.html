@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ВМаксате</title>
-    <link rel="icon" href="icon.jpeg" type="image/x-icon">
+    <title>Вход — ВМаксате</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
     <style>
         body {
             background: #f4f7fa;
@@ -14,16 +15,12 @@
             align-items: center;
             min-height: 100vh;
         }
-        h2 {
-            margin-top: 60px;
-            color: #333;
-        }
-        #login-container {
+        .login-container {
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
             padding: 32px 24px 24px 24px;
-            margin-top: 24px;
+            margin-top: 60px;
             width: 350px;
             display: flex;
             flex-direction: column;
@@ -50,7 +47,6 @@
             font-size: 16px;
             cursor: pointer;
             transition: background 0.2s;
-            width: 100%;
         }
         button:hover {
             background: #005fa3;
@@ -63,10 +59,9 @@
     </style>
 </head>
 <body>
-    <h2>Введите свой UserID:</h2>
-    <div id="login-container">
-        <form method="POST">
-            <input type="text" name="user_id" placeholder="UserID" required>
+    <div class="login-container">
+        <form method="POST" action="{{ url_for('login') }}">
+            <input type="text" name="user_id" placeholder="Ваш UserID" required>
             <button type="submit">Войти</button>
         </form>
         {% if error %}
