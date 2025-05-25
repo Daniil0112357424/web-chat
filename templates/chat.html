@@ -101,6 +101,14 @@
         button:hover {
             background: #005fa3;
         }
+        #logout-btn {
+            background: #a04ed1;
+            margin-left: 16px;
+            padding: 8px 18px;
+        }
+        #logout-btn:hover {
+            background: #7b36a3;
+        }
         #messages {
             list-style: none;
             padding: 0;
@@ -175,7 +183,10 @@
         <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
         <span class="header-title">ВМаксате</span>
     </div>
-    <h3>Ваш UserID: {{ user_id }}</h3>
+    <h3>
+        Ваш UserID: {{ user_id }}
+        <button id="logout-btn">Выйти</button>
+    </h3>
     <div id="main-chat-flex">
         <div id="chat-container">
             <input type="text" id="to_user" placeholder="Кому (UserID)" required>
@@ -259,6 +270,11 @@
             item.innerHTML = `<b>${data.from}:</b><br><img src="${data.image}" alt="Фото">`;
             document.getElementById("messages").appendChild(item);
         });
+
+        // Кнопка выхода
+        document.getElementById("logout-btn").onclick = function() {
+            window.location.href = "/logout";
+        };
     </script>
 </body>
 </html>

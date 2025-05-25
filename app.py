@@ -32,6 +32,11 @@ def chat():
         return redirect(url_for("login"))
     return render_template("chat.html", user_id=session["user_id"])
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @socketio.on("connect")
 def handle_connect():
     user_id = session.get("user_id")
