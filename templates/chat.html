@@ -191,10 +191,12 @@
         <div id="chat-container">
             <input type="text" id="to_user" placeholder="Кому (UserID)" required>
             <input type="text" id="message" placeholder="Ваше сообщение">
-            <label for="image_input">
-                📎 Прикрепить файл
-            </label>
-            <input type="file" id="image_input" accept="image/*">
+            <div style="position:relative;display:inline-block;margin-bottom:12px;">
+                <label for="image_input" style="display:block;cursor:pointer;">
+                    📎 Прикрепить файл
+                    <input type="file" id="image_input" accept="image/*" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+                </label>
+            </div>
             <button onclick="send()">Отправить</button>
         </div>
         <div id="messages-container">
