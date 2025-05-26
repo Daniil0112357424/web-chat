@@ -6,7 +6,7 @@
     <link rel="icon" href="{{ url_for('static', filename='icon.jpeg') }}" type="image/x-icon">
     <style>
         body {
-            background: #f4f7fa;
+            background: #231f26;
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -16,50 +16,88 @@
             min-height: 100vh;
         }
         .login-container {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
-            margin-top: 60px;
-            width: 350px;
+            background: #2d2833;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            padding: 36px 28px 28px 28px;
+            margin-top: 80px;
+            width: 95vw;
+            max-width: 380px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
         }
+        .login-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #a04ed1;
+            margin: 0 auto 18px auto;
+            display: block;
+            border: 2px solid #a04ed1;
+        }
+        .login-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
         input[type="text"] {
-            padding: 10px;
-            border: 1px solid #d0d7de;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 16px;
+            background: #29232e;
+            color: #fff;
+            border: 1.5px solid #3a3342;
+            border-radius: 18px;
+            padding: 12px 18px;
+            font-size: 1rem;
+            margin-bottom: 18px;
             outline: none;
             transition: border 0.2s;
         }
         input[type="text"]:focus {
-            border: 1.5px solid #0078d7;
+            border: 1.5px solid #a04ed1;
         }
         button {
-            background: #0078d7;
+            background: #a04ed1;
             color: #fff;
             border: none;
-            border-radius: 6px;
-            padding: 10px 0;
-            font-size: 16px;
+            border-radius: 18px;
+            padding: 12px 0;
+            font-size: 1rem;
             cursor: pointer;
             transition: background 0.2s;
+            margin-bottom: 0;
         }
         button:hover {
-            background: #005fa3;
+            background: #7b36a3;
         }
         .error-message {
-            color: #d32f2f;
-            margin-top: 10px;
+            color: #ff7b7b;
+            margin-top: 16px;
             text-align: center;
+            font-size: 1rem;
+            background: #3a3342;
+            border-radius: 12px;
+            padding: 10px 0;
+        }
+        @media (max-width: 600px) {
+            .login-container {
+                max-width: 99vw;
+                padding: 18px 8vw 18px 8vw;
+                margin-top: 40px;
+            }
+            .login-title {
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
+        <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого" class="login-logo">
+        <div class="login-title">Вход в ВМаксате</div>
         <form method="POST" action="{{ url_for('login') }}">
             <input type="text" name="user_id" placeholder="Ваш UserID" required>
             <button type="submit">Войти</button>

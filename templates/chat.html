@@ -7,173 +7,176 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         body {
-            background: #f4f7fa;
+            background: #231f26;
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            color: #fff;
         }
         .header-bar {
             width: 100%;
             display: flex;
             align-items: center;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            padding: 12px 32px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            margin-bottom: 12px;
+            background: #18151c;
+            padding: 18px 24px;
+            box-sizing: border-box;
+            border-radius: 0 0 24px 24px;
+            margin-bottom: 24px;
         }
         .header-bar img {
             width: 48px;
             height: 48px;
-            max-width: 48px;
-            max-height: 48px;
-            border-radius: 12px;
-            margin-right: 16px;
-            margin-left: 16px;
+            border-radius: 50%;
+            margin-right: 18px;
             object-fit: cover;
-            background: #f4f7fa;
-            box-shadow: 0 2px 8px rgba(160,78,209,0.08);
+            background: #a04ed1;
+            border: 2px solid #a04ed1;
         }
         .header-title {
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #a04ed1;
+            color: #fff;
             letter-spacing: 1px;
         }
         h3 {
-            margin-top: 40px;
-            color: #333;
+            margin: 0 0 24px 0;
+            color: #fff;
+            font-weight: 400;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        #logout-btn {
+            background: #a04ed1;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            padding: 8px 20px;
+            font-size: 1rem;
+            margin-left: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #logout-btn:hover {
+            background: #7b36a3;
         }
         #main-chat-flex {
             display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 32px;
-            margin-top: 32px;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            width: 100%;
         }
-        #chat-container, #messages-container {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            padding: 32px 24px 24px 24px;
-            width: 350px;
-            min-width: 0;
+        #chat-container {
+            background: #2d2833;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+            padding: 24px 24px 18px 24px;
+            width: 95vw;
+            max-width: 420px;
+            margin-bottom: 0;
             display: flex;
             flex-direction: column;
             align-items: stretch;
         }
         #messages-container {
-            min-height: 300px;
-        }
-        input[type="text"] {
-            padding: 10px;
-            border: 1px solid #d0d7de;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 16px;
-            outline: none;
-            transition: border 0.2s;
-        }
-        input[type="text"]:focus {
-            border: 1.5px solid #0078d7;
-        }
-        input[type="file"] {
-            margin-bottom: 12px;
-        }
-        button {
-            background: #0078d7;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 0;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-bottom: 8px;
-        }
-        button:hover {
-            background: #005fa3;
-        }
-        #logout-btn {
-            background: #a04ed1;
-            margin-left: 16px;
-            padding: 8px 18px;
-        }
-        #logout-btn:hover {
-            background: #7b36a3;
+            width: 95vw;
+            max-width: 420px;
         }
         #messages {
             list-style: none;
             padding: 0;
-            margin-top: 0;
-            max-height: 250px;
-            overflow-y: auto;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
         }
         #messages li {
-            background: #f0f4f8;
-            margin-bottom: 8px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            color: #222;
-            word-break: break-word;
+            background: #3a3342;
+            border-radius: 18px;
+            padding: 18px 18px 14px 18px;
+            color: #fff;
+            margin-bottom: 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            box-shadow: 0 2px 8px rgba(160,78,209,0.04);
+        }
+        #messages li b {
+            color: #a04ed1;
+            font-weight: 600;
         }
         #messages img {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-            display: block;
-            margin-top: 6px;
+            max-width: 120px;
+            max-height: 120px;
+            border-radius: 12px;
+            margin-top: 8px;
         }
-        @media (max-width: 800px) {
-            #main-chat-flex {
-                flex-direction: column;
-                gap: 16px;
-                width: 100%;
-                align-items: center;
-            }
-            .header-bar {
-                align-items: flex-start;
-                padding: 12px 12px;
-            }
-            .header-bar img {
-                margin-bottom: 8px;
-                margin-right: 0;
-            }
-            #chat-container, #messages-container {
-                width: 95vw;
-                min-width: 0;
-                padding: 18px 8px 16px 8px;
-                box-sizing: border-box;
-            }
-            h3 {
-                margin-top: 16px;
-                font-size: 1.1rem;
-            }
+        input[type="text"] {
+            background: #29232e;
+            color: #fff;
+            border: 1.5px solid #3a3342;
+            border-radius: 18px;
+            padding: 12px 18px;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            outline: none;
+            transition: border 0.2s;
         }
-        @media (max-width: 480px) {
+        input[type="text"]:focus {
+            border: 1.5px solid #a04ed1;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .attach-label {
+            display: flex;
+            align-items: center;
+            background: #3a3342;
+            color: #fff;
+            border-radius: 18px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            width: fit-content;
+            transition: background 0.2s;
+            border: 1.5px solid #3a3342;
+        }
+        .attach-label:hover {
+            background: #a04ed1;
+            color: #fff;
+            border: 1.5px solid #a04ed1;
+        }
+        button {
+            background: #a04ed1;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            padding: 12px 0;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 0;
+        }
+        button:hover {
+            background: #7b36a3;
+        }
+        @media (max-width: 600px) {
             .header-bar img {
                 width: 36px;
                 height: 36px;
-                max-width: 36px;
-                max-height: 36px;
             }
             .header-title {
-                font-size: 1.2rem;
+                font-size: 1.1rem;
             }
             #chat-container, #messages-container {
-                width: 99vw;
+                max-width: 99vw;
                 padding: 10px 2vw 10px 2vw;
             }
-            #messages img {
-                max-width: 120px;
-                max-height: 120px;
+            #messages li {
+                padding: 12px 10px 10px 10px;
             }
         }
     </style>
@@ -191,12 +194,10 @@
         <div id="chat-container">
             <input type="text" id="to_user" placeholder="Кому (UserID)" required>
             <input type="text" id="message" placeholder="Ваше сообщение">
-            <div style="position:relative;display:inline-block;margin-bottom:12px;">
-                <label for="image_input" style="display:block;cursor:pointer;">
-                    📎 Прикрепить файл
-                    <input type="file" id="image_input" accept="image/*" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
-                </label>
-            </div>
+            <label for="image_input" class="attach-label">
+                📎 Прикрепить файл
+                <input type="file" id="image_input" accept="image/*">
+            </label>
             <button onclick="send()">Отправить</button>
         </div>
         <div id="messages-container">
@@ -257,9 +258,9 @@
             data.history.forEach(function(msg) {
                 const item = document.createElement("li");
                 if (msg.type === "text") {
-                    item.textContent = msg.from + ": " + msg.content;
+                    item.innerHTML = `<b>${msg.from}</b><br>${msg.content}`;
                 } else if (msg.type === "image") {
-                    item.innerHTML = `<b>${msg.from}:</b><br><img src="${msg.content}" alt="Фото">`;
+                    item.innerHTML = `<b>${msg.from}</b><br><img src="${msg.content}" alt="Фото">`;
                 }
                 messages.appendChild(item);
             });
@@ -267,13 +268,13 @@
 
         socket.on("receive_message", function(data) {
             const item = document.createElement("li");
-            item.textContent = data.from + ": " + data.message;
+            item.innerHTML = `<b>${data.from}</b><br>${data.message}`;
             document.getElementById("messages").appendChild(item);
         });
 
         socket.on("receive_image", function(data) {
             const item = document.createElement("li");
-            item.innerHTML = `<b>${data.from}:</b><br><img src="${data.image}" alt="Фото">`;
+            item.innerHTML = `<b>${data.from}</b><br><img src="${data.image}" alt="Фото">`;
             document.getElementById("messages").appendChild(item);
         });
 
