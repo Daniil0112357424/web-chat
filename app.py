@@ -8,6 +8,7 @@ socketio = SocketIO(app)
 
 user_sessions = {}
 chat_history = {}
+online_users = set()  # Для отслеживания онлайн-пользователей
 
 def get_history_key(user1, user2):
     return tuple(sorted([user1, user2]))
@@ -42,7 +43,9 @@ def handle_connect():
     user_id = session.get("user_id")
     if user_id:
         user_sessions[user_id] = request.sid
+        online_users.add(user_id)
         print(f"{user_id} подключился (session {request.sid})")
+        emit("online_users", list(online_users), broadcast=True)
 
 @socketio.on("send_message")
 def handle_send_message(data):
@@ -94,12 +97,19 @@ def handle_get_history(data):
         history = chat_history.get(key, [])
         emit("chat_history", {"history": history})
 
+@socketio.on("get_online_users")
+def handle_get_online_users():
+    emit("online_users", list(online_users))
+
 @socketio.on("disconnect")
 def handle_disconnect():
     for uid, sid in list(user_sessions.items()):
         if sid == request.sid:
             print(f"{uid} отключился")
             del user_sessions[uid]
+            if uid in online_users:
+                online_users.remove(uid)
+                emit("online_users", list(online_users), broadcast=True)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
