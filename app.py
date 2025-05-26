@@ -101,6 +101,58 @@ def handle_get_history(data):
 def handle_get_online_users():
     emit("online_users", list(online_users))
 
+# --- WebRTC аудиозвонок (сигналинг) ---
+@socketio.on("call_offer")
+def handle_call_offer(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to")
+    offer = data.get("offer")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_offer", {"from": from_user, "offer": offer}, room=to_session)
+
+@socketio.on("call_answer")
+def handle_call_answer(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to")
+    answer = data.get("answer")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_answer", {"from": from_user, "answer": answer}, room=to_session)
+
+@socketio.on("call_ice")
+def handle_call_ice(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to")
+    candidate = data.get("candidate")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_ice", {"from": from_user, "candidate": candidate}, room=to_session)
+
+@socketio.on("call_hangup")
+def handle_call_hangup(data):
+    from_user = session.get("user_id")
+    to_user = data.get("from")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_hangup", {}, room=to_session)
+
+@socketio.on("call_reject")
+def handle_call_reject(data):
+    from_user = session.get("user_id")
+    to_user = data.get("from")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_reject", {}, room=to_session)
+
+@socketio.on("call_busy")
+def handle_call_busy(data):
+    from_user = session.get("user_id")
+    to_user = data.get("to")
+    to_session = user_sessions.get(to_user)
+    if to_session:
+        emit("call_busy", {}, room=to_session)
+
 @socketio.on("disconnect")
 def handle_disconnect():
     for uid, sid in list(user_sessions.items()):

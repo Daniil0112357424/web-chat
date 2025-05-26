@@ -38,25 +38,31 @@
             color: #a04ed1;
             letter-spacing: 1px;
         }
-        h3 {
-            margin: 0 0 24px 0;
-            color: #fff;
-            font-weight: 400;
-            font-size: 1.1rem;
+        .user-id-block {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 16px;
+            justify-content: center;
+            margin: 32px 0 24px 0;
+            gap: 18px;
+        }
+        .user-id-text {
+            color: #a04ed1;
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 0;
         }
         #logout-btn {
             background: #a04ed1;
             color: #fff;
             border: none;
             border-radius: 18px;
-            padding: 8px 20px;
+            padding: 10px 32px;
             font-size: 1rem;
-            margin-left: 12px;
             cursor: pointer;
             transition: background 0.2s;
+            margin: 0 auto;
+            display: block;
         }
         #logout-btn:hover {
             background: #7b36a3;
@@ -162,7 +168,7 @@
             margin-bottom: 0;
         }
         .abc123{
-            color: #fff;
+            color: #a04ed1;
             font-size: 1.1rem;
             display: flex;
             align-items: center;
@@ -220,10 +226,10 @@
         <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
         <span class="header-title">ВМаксате</span>
     </div>
-    <h3 class="abc123">
-        Ваш UserID: {{ user_id }}
+    <div class="user-id-block">
+        <div class="user-id-text">Ваш ID: {{ user_id }}</div>
         <button id="logout-btn">Выйти</button>
-    </h3>
+    </div>
     <div id="main-chat-flex">
         <div id="chat-container">
             <input type="text" id="to_user" placeholder="Кому (UserID)" required autocomplete="off">
@@ -233,6 +239,15 @@
                 📎 Прикрепить файл
                 <input type="file" id="image_input" accept="image/*">
             </label>
+            <!-- Кнопка и блок аудиозвонка -->
+            <button id="call-btn" style="margin-bottom:14px;">📞 Позвонить</button>
+            <div id="call-controls" style="display:none; flex-direction:column; align-items:center; margin-bottom:14px;">
+                <span id="call-status" style="margin-bottom:10px;"></span>
+                <button id="answer-btn" style="display:none; margin-bottom:8px;">Принять</button>
+                <button id="reject-btn" style="display:none; margin-bottom:8px;">Отклонить</button>
+                <button id="hangup-btn" style="display:none;">Завершить</button>
+            </div>
+            <audio id="remoteAudio" autoplay style="display:none;"></audio>
             <button onclick="send()">Отправить</button>
         </div>
         <div id="messages-container">
@@ -359,6 +374,166 @@
             const item = document.createElement("li");
             item.innerHTML = `<b>${data.from}</b><br><img src="${data.image}" alt="Фото">`;
             document.getElementById("messages").appendChild(item);
+        });
+
+        // --- WebRTC аудиозвонок ---
+        let localStream = null;
+        let peerConnection = null;
+        let isCalling = false;
+        const servers = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+        const callBtn = document.getElementById("call-btn");
+        const callControls = document.getElementById("call-controls");
+        const callStatus = document.getElementById("call-status");
+        const answerBtn = document.getElementById("answer-btn");
+        const rejectBtn = document.getElementById("reject-btn");
+        const hangupBtn = document.getElementById("hangup-btn");
+        const remoteAudio = document.getElementById("remoteAudio");
+
+        callBtn.onclick = async function() {
+            const to_user = document.getElementById("to_user").value.trim();
+            if (!to_user) return alert("Введите UserID для звонка!");
+            callStatus.textContent = "Звонок...";
+            callControls.style.display = "flex";
+            hangupBtn.style.display = "inline-block";
+            isCalling = true;
+            await startCall(to_user);
+        };
+
+        answerBtn.onclick = async function() {
+            callStatus.textContent = "Соединение...";
+            answerBtn.style.display = "none";
+            rejectBtn.style.display = "none";
+            hangupBtn.style.display = "inline-block";
+            await acceptCall();
+        };
+
+        rejectBtn.onclick = function() {
+            socket.emit("call_reject", { from: window.myUserId });
+            resetCallUI();
+        };
+
+        hangupBtn.onclick = function() {
+            socket.emit("call_hangup", { from: window.myUserId });
+            endCall();
+        };
+
+        function resetCallUI() {
+            callControls.style.display = "none";
+            callStatus.textContent = "";
+            answerBtn.style.display = "none";
+            rejectBtn.style.display = "none";
+            hangupBtn.style.display = "none";
+        }
+
+        async function startCall(to_user) {
+            peerConnection = new RTCPeerConnection(servers);
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit("call_ice", { to: to_user, candidate: event.candidate });
+                }
+            };
+            peerConnection.ontrack = (event) => {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.style.display = "block";
+            };
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                socket.emit("call_offer", { to: to_user, offer: offer });
+            } catch (e) {
+                alert("Ошибка доступа к микрофону: " + e.message);
+                resetCallUI();
+            }
+        }
+
+        async function acceptCall() {
+            if (!peerConnection) {
+                peerConnection = new RTCPeerConnection(servers);
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.emit("call_ice", { to: window.callFrom, candidate: event.candidate });
+                    }
+                };
+                peerConnection.ontrack = (event) => {
+                    remoteAudio.srcObject = event.streams[0];
+                    remoteAudio.style.display = "block";
+                };
+            }
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                await peerConnection.setRemoteDescription(window.remoteOffer);
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit("call_answer", { to: window.callFrom, answer: answer });
+            } catch (e) {
+                alert("Ошибка доступа к микрофону: " + e.message);
+                resetCallUI();
+            }
+        }
+
+        function endCall() {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            remoteAudio.srcObject = null;
+            remoteAudio.style.display = "none";
+            resetCallUI();
+        }
+
+        // --- Socket.IO обработка звонка ---
+        window.myUserId = "{{ user_id }}";
+
+        socket.on("call_offer", async function(data) {
+            if (isCalling) {
+                socket.emit("call_busy", { to: data.from });
+                return;
+            }
+            window.callFrom = data.from;
+            window.remoteOffer = data.offer;
+            callControls.style.display = "flex";
+            callStatus.textContent = `Входящий звонок от ${data.from}`;
+            answerBtn.style.display = "inline-block";
+            rejectBtn.style.display = "inline-block";
+            hangupBtn.style.display = "none";
+        });
+
+        socket.on("call_answer", async function(data) {
+            if (peerConnection) {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                callStatus.textContent = "Соединение установлено";
+            }
+        });
+
+        socket.on("call_ice", async function(data) {
+            if (peerConnection) {
+                try {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } catch (e) {}
+            }
+        });
+
+        socket.on("call_hangup", function() {
+            callStatus.textContent = "Звонок завершён";
+            endCall();
+        });
+
+        socket.on("call_reject", function() {
+            callStatus.textContent = "Пользователь отклонил звонок";
+            endCall();
+        });
+
+        socket.on("call_busy", function() {
+            callStatus.textContent = "Пользователь занят";
+            endCall();
         });
 
         // Кнопка выхода
