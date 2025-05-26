@@ -79,6 +79,7 @@
             display: flex;
             flex-direction: column;
             align-items: stretch;
+            position: relative;
         }
         #messages-container {
             width: 95vw;
@@ -160,8 +161,38 @@
             transition: background 0.2s;
             margin-bottom: 0;
         }
+        .abc123{
+            color: #fff;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
         button:hover {
             background: #7b36a3;
+        }
+        /* Стили для выпадающего списка онлайн-пользователей */
+        #online-users-dropdown {
+            position: absolute;
+            background: #2d2833;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(160,78,209,0.08);
+            z-index: 100;
+            color: #fff;
+            font-size: 1rem;
+            padding: 4px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        #online-users-dropdown div {
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #online-users-dropdown div:hover {
+            background: #a04ed1;
         }
         @media (max-width: 600px) {
             .header-bar img {
@@ -175,6 +206,9 @@
                 max-width: 99vw;
                 padding: 10px 2vw 10px 2vw;
             }
+            #chat-container {
+                position: relative;
+            }
             #messages li {
                 padding: 12px 10px 10px 10px;
             }
@@ -186,13 +220,14 @@
         <img src="{{ url_for('static', filename='icon.jpeg') }}" alt="Лого">
         <span class="header-title">ВМаксате</span>
     </div>
-    <h3>
+    <h3 class="abc123">
         Ваш UserID: {{ user_id }}
         <button id="logout-btn">Выйти</button>
     </h3>
     <div id="main-chat-flex">
         <div id="chat-container">
-            <input type="text" id="to_user" placeholder="Кому (UserID)" required>
+            <input type="text" id="to_user" placeholder="Кому (UserID)" required autocomplete="off">
+            <div id="online-users-dropdown"></div>
             <input type="text" id="message" placeholder="Ваше сообщение">
             <label for="image_input" class="attach-label">
                 📎 Прикрепить файл
@@ -208,6 +243,54 @@
     <script>
         var socket = io();
 
+        // --- Онлайн пользователи ---
+        let onlineUsers = [];
+
+        document.getElementById("to_user").addEventListener("focus", function() {
+            socket.emit("get_online_users");
+        });
+
+        socket.on("online_users", function(users) {
+            onlineUsers = users.filter(u => u !== "{{ user_id }}");
+            showOnlineUsersDropdown();
+        });
+
+        function showOnlineUsersDropdown() {
+            let input = document.getElementById("to_user");
+            let dropdown = document.getElementById("online-users-dropdown");
+            if (!dropdown) return;
+            dropdown.innerHTML = "";
+            if (onlineUsers.length === 0) {
+                dropdown.style.display = "none";
+                return;
+            }
+            // Позиционируем дропдаун под input
+            dropdown.style.width = input.offsetWidth + "px";
+            dropdown.style.top = (input.offsetTop + input.offsetHeight + 4) + "px";
+            dropdown.style.left = input.offsetLeft + "px";
+            onlineUsers.forEach(function(user) {
+                let item = document.createElement("div");
+                item.textContent = user;
+                item.onclick = function(e) {
+                    e.preventDefault();
+                    input.value = user;
+                    dropdown.style.display = "none";
+                    loadHistory();
+                };
+                dropdown.appendChild(item);
+            });
+            dropdown.style.display = "block";
+        }
+
+        // Скрывать дропдаун при потере фокуса
+        document.getElementById("to_user").addEventListener("blur", function() {
+            setTimeout(function() {
+                let dropdown = document.getElementById("online-users-dropdown");
+                if (dropdown) dropdown.style.display = "none";
+            }, 200);
+        });
+
+        // --- Обычный чат ---
         function send() {
             const to_user = document.getElementById("to_user").value.trim();
             const message = document.getElementById("message").value.trim();
