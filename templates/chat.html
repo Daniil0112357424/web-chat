@@ -493,6 +493,7 @@
             remoteAudio.srcObject = null;
             remoteAudio.style.display = "none";
             resetCallUI();
+            isCalling = false; // <--- Сброс флага после завершения звонка
         }
 
         // --- Socket.IO обработка звонка ---
@@ -530,16 +531,19 @@
         socket.on("call_hangup", function() {
             callStatus.textContent = "Звонок завершён";
             endCall();
+            isCalling = false; // <--- Сброс флага
         });
 
         socket.on("call_reject", function() {
             callStatus.textContent = "Пользователь отклонил звонок";
             endCall();
+            isCalling = false; // <--- Сброс флага
         });
 
         socket.on("call_busy", function() {
             callStatus.textContent = "Пользователь занят";
             endCall();
+            isCalling = false; // <--- Сброс флага
         });
 
         document.getElementById("logout-btn").onclick = function() {
