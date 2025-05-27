@@ -178,7 +178,6 @@
         button:hover {
             background: #7b36a3;
         }
-        /* Стили для выпадающего списка онлайн-пользователей */
         #online-users-dropdown {
             position: absolute;
             background: #2d2833;
@@ -279,7 +278,6 @@
                 dropdown.style.display = "none";
                 return;
             }
-            // Позиционируем дропдаун под input
             dropdown.style.width = input.offsetWidth + "px";
             dropdown.style.top = (input.offsetTop + input.offsetHeight + 4) + "px";
             dropdown.style.left = input.offsetLeft + "px";
@@ -297,7 +295,6 @@
             dropdown.style.display = "block";
         }
 
-        // Скрывать дропдаун при потере фокуса
         document.getElementById("to_user").addEventListener("blur", function() {
             setTimeout(function() {
                 let dropdown = document.getElementById("online-users-dropdown");
@@ -343,7 +340,6 @@
             loadHistory();
         });
 
-        // Загружаем историю при первом открытии, если поле заполнено
         window.onload = function() {
             if (document.getElementById("to_user").value.trim()) {
                 loadHistory();
@@ -380,14 +376,14 @@
         let localStream = null;
         let peerConnection = null;
         let isCalling = false;
-        // --- ВАЖНО: используем STUN и TURN для стабильной работы звонков ---
+        // --- ВАЖНО: используйте свой TURN-сервер для стабильной работы звонков ---
         const servers = {
             iceServers: [
                 { urls: "stun:stun.l.google.com:19302" },
                 {
-                    urls: "turn:global.relay.metered.ca:80",
-                    username: "openai",
-                    credential: "openai"
+                    urls: "turn:51.20.127.4:3478", // <-- Ваш IP сервера AWS
+                    username: "webrtcuser",        // <-- Ваш логин из turnserver.conf
+                    credential: "webrtcpass"       // <-- Ваш пароль из turnserver.conf
                 }
             ]
         };
@@ -546,7 +542,6 @@
             endCall();
         });
 
-        // Кнопка выхода
         document.getElementById("logout-btn").onclick = function() {
             window.location.href = "/logout";
         };
