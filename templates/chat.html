@@ -397,13 +397,11 @@
         const remoteAudio = document.getElementById("remoteAudio");
 
         callBtn.onclick = async function() {
-            const to_user = document.getElementById("to_user").value.trim();
-            if (!to_user) return alert("Введите UserID для звонка!");
             callStatus.textContent = "Звонок...";
             callControls.style.display = "flex";
             hangupBtn.style.display = "inline-block";
             isCalling = true;
-            await startCall(to_user);
+            await startCall(document.getElementById("to_user").value.trim());
         };
 
         answerBtn.onclick = async function() {
@@ -433,6 +431,10 @@
         }
 
         async function startCall(to_user) {
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
             peerConnection = new RTCPeerConnection(servers);
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
@@ -442,6 +444,9 @@
             peerConnection.ontrack = (event) => {
                 remoteAudio.srcObject = event.streams[0];
                 remoteAudio.style.display = "block";
+            };
+            peerConnection.oniceconnectionstatechange = function() {
+                console.log("ICE state:", peerConnection.iceConnectionState);
             };
             try {
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -456,18 +461,23 @@
         }
 
         async function acceptCall() {
-            if (!peerConnection) {
-                peerConnection = new RTCPeerConnection(servers);
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        socket.emit("call_ice", { to: window.callFrom, candidate: event.candidate });
-                    }
-                };
-                peerConnection.ontrack = (event) => {
-                    remoteAudio.srcObject = event.streams[0];
-                    remoteAudio.style.display = "block";
-                };
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
             }
+            peerConnection = new RTCPeerConnection(servers);
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit("call_ice", { to: window.callFrom, candidate: event.candidate });
+                }
+            };
+            peerConnection.ontrack = (event) => {
+                remoteAudio.srcObject = event.streams[0];
+                remoteAudio.style.display = "block";
+            };
+            peerConnection.oniceconnectionstatechange = function() {
+                console.log("ICE state:", peerConnection.iceConnectionState);
+            };
             try {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(window.remoteOffer));
                 localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -493,7 +503,7 @@
             remoteAudio.srcObject = null;
             remoteAudio.style.display = "none";
             resetCallUI();
-            isCalling = false; // <--- Сброс флага после завершения звонка
+            isCalling = false;
         }
 
         // --- Socket.IO обработка звонка ---
@@ -531,19 +541,19 @@
         socket.on("call_hangup", function() {
             callStatus.textContent = "Звонок завершён";
             endCall();
-            isCalling = false; // <--- Сброс флага
+            isCalling = false;
         });
 
         socket.on("call_reject", function() {
             callStatus.textContent = "Пользователь отклонил звонок";
             endCall();
-            isCalling = false; // <--- Сброс флага
+            isCalling = false;
         });
 
         socket.on("call_busy", function() {
             callStatus.textContent = "Пользователь занят";
             endCall();
-            isCalling = false; // <--- Сброс флага
+            isCalling = false;
         });
 
         document.getElementById("logout-btn").onclick = function() {
