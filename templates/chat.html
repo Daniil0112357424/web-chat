@@ -404,6 +404,7 @@
         };
 
         answerBtn.onclick = async function() {
+            console.log("Кнопка 'Принять' нажата");
             callStatus.textContent = "Соединение...";
             answerBtn.style.display = "none";
             rejectBtn.style.display = "none";
@@ -460,6 +461,7 @@
         }
 
         async function acceptCall() {
+            console.log("acceptCall вызван");
             if (peerConnection) {
                 peerConnection.close();
                 peerConnection = null;
@@ -500,7 +502,6 @@
                 localStream = null;
             }
             remoteAudio.srcObject = null;
-            // remoteAudio.style.display = "none"; // Не скрываем аудио для избежания проблем с воспроизведением
             resetCallUI();
             isCalling = false;
         }
