@@ -510,6 +510,10 @@
                 }
             };
             peerConnection.ontrack = (event) => {
+                console.log("ontrack streams:", event.streams);
+                if (event.streams[0]) {
+                    console.log("stream tracks:", event.streams[0].getTracks());
+                }
                 // --- Усиление громкости через Web Audio API ---
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 const source = audioCtx.createMediaStreamSource(event.streams[0]);
