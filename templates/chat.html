@@ -442,6 +442,13 @@
                 }
             };
             peerConnection.ontrack = (event) => {
+                // --- Усиление громкости через Web Audio API ---
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(event.streams[0]);
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 2.0; // Увеличить громкость в 2 раза
+                source.connect(gainNode).connect(audioCtx.destination);
+
                 remoteAudio.srcObject = event.streams[0];
                 remoteAudio.style.display = "block";
             };
@@ -449,7 +456,13 @@
                 console.log("ICE state:", peerConnection.iceConnectionState);
             };
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
                 localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
@@ -473,6 +486,13 @@
                 }
             };
             peerConnection.ontrack = (event) => {
+                // --- Усиление громкости через Web Audio API ---
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioCtx.createMediaStreamSource(event.streams[0]);
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = 2.0; // Увеличить громкость в 2 раза
+                source.connect(gainNode).connect(audioCtx.destination);
+
                 remoteAudio.srcObject = event.streams[0];
                 remoteAudio.style.display = "block";
             };
@@ -488,7 +508,13 @@
                 return;
             }
             try {
-                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
                 console.log("getUserMedia успешно");
             } catch (e) {
                 console.error("Ошибка getUserMedia", e);
