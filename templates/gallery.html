@@ -69,13 +69,12 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.secure_url) {
+                if (data.secure_url && data.public_id) {
                     document.getElementById('upload-status').textContent = "Фото загружено!";
-                    // Сохраняем ссылку на сервере
                     fetch('/api/gallery', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: data.secure_url })
+                        body: JSON.stringify({ url: data.secure_url, public_id: data.public_id })
                     }).then(() => loadGallery());
                 } else {
                     document.getElementById('upload-status').textContent = "Ошибка: " + (data.error && data.error.message ? data.error.message : 'Неизвестная ошибка');

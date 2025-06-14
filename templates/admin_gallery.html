@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Админка галереи</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { background: #231f26; color: #fff; font-family: Arial, sans-serif; }
+        .gallery { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; }
+        .img-block { position: relative; display: inline-block; margin: 8px; }
+        .img-block img { max-width: 180px; border-radius: 12px; background: #2d2833; padding: 8px; }
+        .del-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: #ff6a6a; color: #fff; border: none;
+            border-radius: 8px; padding: 4px 10px; cursor: pointer;
+        }
+        .back-btn { display: inline-block; margin: 18px 0; background: #3a3342; color: #fff; border-radius: 18px; padding: 10px 24px; text-decoration: none; font-size: 1rem; border: 1.5px solid #3a3342; transition: background 0.2s, border-color 0.2s; }
+        .back-btn:hover { background: #a04ed1; border-color: #a04ed1; }
+    </style>
+</head>
+<body>
+    <a href="/gallery" class="back-btn">← В галерею</a>
+    <h2>Админка галереи</h2>
+    <div class="gallery">
+        {% for img in images %}
+        <div class="img-block">
+            <img src="{{ img['url'] }}" alt="Фото">
+            <form method="post" action="{{ url_for('admin_gallery_delete', img_id=img['id']) }}" style="display:inline;">
+                <button class="del-btn" type="submit" onclick="return confirm('Удалить это фото из галереи?')">Удалить</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

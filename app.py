@@ -2,6 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_socketio import SocketIO, emit
 import os
 import sqlite3
+import requests
+from requests.auth import HTTPBasicAuth
+
+CLOUDINARY_CLOUD_NAME = "dseier89v"
+CLOUDINARY_API_KEY = "348654761325271"
+CLOUDINARY_API_SECRET = "U7oKAjJJpl5ZWeD1KRgr8N_vvf"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -19,7 +25,7 @@ def get_db_connection():
 
 def init_gallery_db():
     conn = get_db_connection()
-    conn.execute('CREATE TABLE IF NOT EXISTS gallery (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT UNIQUE)')
+    conn.execute('CREATE TABLE IF NOT EXISTS gallery (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT UNIQUE, public_id TEXT)')
     conn.commit()
     conn.close()
 
@@ -28,22 +34,77 @@ init_gallery_db()
 @app.route('/api/gallery', methods=['GET'])
 def api_get_gallery():
     conn = get_db_connection()
-    images = conn.execute('SELECT url FROM gallery ORDER BY id DESC').fetchall()
+    images = conn.execute('SELECT id, url FROM gallery ORDER BY id DESC').fetchall()
     conn.close()
-    return jsonify([row['url'] for row in images])
+    # Теперь возвращаем id и url для админки
+    return jsonify([{"id": row['id'], "url": row['url']} for row in images])
 
 @app.route('/api/gallery', methods=['POST'])
 def api_add_gallery():
     data = request.get_json()
     url = data.get('url')
-    if url:
+    public_id = data.get('public_id')
+    if url and public_id:
         conn = get_db_connection()
         try:
-            conn.execute('INSERT OR IGNORE INTO gallery (url) VALUES (?)', (url,))
+            conn.execute('INSERT OR IGNORE INTO gallery (url, public_id) VALUES (?, ?)', (url, public_id))
             conn.commit()
         finally:
             conn.close()
     return jsonify({"success": True})
+
+@app.route('/api/gallery', methods=['DELETE'])
+def api_delete_gallery():
+    # Только для администратора (замените 'admin' на свой user_id)
+    if session.get("user_id") != "admin":
+        return jsonify({"error": "Доступ запрещён"}), 403
+    data = request.get_json()
+    url = data.get('url')
+    if url:
+        conn = get_db_connection()
+        conn.execute('DELETE FROM gallery WHERE url = ?', (url,))
+        conn.commit()
+        conn.close()
+    return jsonify({"success": True})
+
+# --- Админка галереи ---
+ADMIN_PASSWORD = "your_secret_password"  # Задайте свой пароль
+
+@app.route('/admin_gallery', methods=['GET', 'POST'])
+def admin_gallery():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            return redirect(url_for('admin_gallery'))
+        else:
+            return render_template('admin_gallery_login.html', error="Неверный пароль")
+    if not session.get('is_admin'):
+        return render_template('admin_gallery_login.html')
+    # Получаем все фото из базы
+    conn = get_db_connection()
+    images = conn.execute('SELECT id, url FROM gallery ORDER BY id DESC').fetchall()
+    conn.close()
+    return render_template('admin_gallery.html', images=images)
+
+@app.route('/admin_gallery/delete/<int:img_id>', methods=['POST'])
+def admin_gallery_delete(img_id):
+    if not session.get('is_admin'):
+        return jsonify({'error': 'Доступ запрещён'}), 403
+    conn = get_db_connection()
+    row = conn.execute('SELECT public_id FROM gallery WHERE id=?', (img_id,)).fetchone()
+    if row and row['public_id']:
+        # Удаляем из Cloudinary
+        url = f"https://api.cloudinary.com/v1_1/{CLOUDINARY_CLOUD_NAME}/resources/image/upload"
+        resp = requests.delete(
+            url,
+            params={"public_ids[]": row['public_id']},
+            auth=HTTPBasicAuth(CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)
+        )
+    conn.execute('DELETE FROM gallery WHERE id=?', (img_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('admin_gallery'))
 
 # --- Основные маршруты ---
 @app.route('/gallery')
