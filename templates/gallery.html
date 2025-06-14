@@ -93,13 +93,13 @@
                 .then(res => res.json())
                 .then(images => {
                     galleryDiv.innerHTML = "";
-                    images.forEach(function(url) {
-                        const img = document.createElement('img');
-                        img.src = url;
-                        galleryDiv.appendChild(img);
+                    images.forEach(function(img) {
+                        const imageElem = document.createElement('img');
+                        imageElem.src = img.url; // <-- исправлено
+                        galleryDiv.appendChild(imageElem);
                     });
                 });
-        }
+}
 
         // Открыть диалог выбора файла по клику на label
         document.querySelector('.upload-label').onclick = function() {
