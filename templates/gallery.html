@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Галерея</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { background: #231f26; color: #fff; font-family: Arial, sans-serif; }
+        .gallery { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; }
+        .gallery img { max-width: 180px; border-radius: 12px; background: #2d2833; padding: 8px; }
+        .upload-block { margin: 24px 0; }
+        .upload-label {
+            background: #3a3342; color: #fff; border-radius: 18px; padding: 10px 18px;
+            cursor: pointer; font-size: 1rem; border: 1.5px solid #3a3342;
+            display: inline-block; margin-bottom: 12px;
+        }
+        .upload-label:hover { background: #a04ed1; border: 1.5px solid #a04ed1; }
+    </style>
+</head>
+<body>
+    <h2>Галерея пользователей</h2>
+    <div class="upload-block">
+        <label class="upload-label">
+            📷 Загрузить фото
+            <input type="file" id="fileInput" accept="image/*" style="display:none;">
+        </label>
+        <span id="upload-status"></span>
+    </div>
+    <div class="gallery" id="gallery"></div>
+
+    <script>
+        // Cloudinary config
+        const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dseier89v/image/upload';
+        const CLOUDINARY_UPLOAD_PRESET = 'ml_default'; // замените на свой upload_preset, если другой
+
+        // Загрузка фото
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            document.getElementById('upload-status').textContent = "Загрузка...";
+            fetch(CLOUDINARY_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.secure_url) {
+                    document.getElementById('upload-status').textContent = "Фото загружено!";
+                    addImageToGallery(data.secure_url);
+                } else {
+                    document.getElementById('upload-status').textContent = "Ошибка: " + (data.error && data.error.message ? data.error.message : 'Неизвестная ошибка');
+                }
+            })
+            .catch(err => {
+                document.getElementById('upload-status').textContent = "Ошибка: " + err;
+            });
+        });
+
+        // Добавить картинку в галерею (и в localStorage)
+        function addImageToGallery(url) {
+            const galleryDiv = document.getElementById('gallery');
+            const img = document.createElement('img');
+            img.src = url;
+            galleryDiv.prepend(img);
+
+            // Сохраняем ссылку в localStorage (для примера, без сервера)
+            let images = JSON.parse(localStorage.getItem('cloudinary_gallery') || '[]');
+            images.unshift(url);
+            localStorage.setItem('cloudinary_gallery', JSON.stringify(images));
+        }
+
+        // Показать галерею (загружаем из localStorage)
+        function loadGallery() {
+            const galleryDiv = document.getElementById('gallery');
+            galleryDiv.innerHTML = "";
+            let images = JSON.parse(localStorage.getItem('cloudinary_gallery') || '[]');
+            images.forEach(function(url) {
+                const img = document.createElement('img');
+                img.src = url;
+                galleryDiv.appendChild(img);
+            });
+        }
+
+        // Открыть диалог выбора файла по клику на label
+        document.querySelector('.upload-label').onclick = function() {
+            document.getElementById('fileInput').click();
+        };
+
+        loadGallery();
+    </script>
+</body>
+</html>
