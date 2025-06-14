@@ -13,6 +13,10 @@ online_users = set()  # Для отслеживания онлайн-польз�
 def get_history_key(user1, user2):
     return tuple(sorted([user1, user2]))
 
+@app.route('/gallery')
+def gallery():
+    return render_template('gallery.html') # Галерея изображений
+
 @app.route("/")
 def index():
     return render_template("index2.html")  # Главная страница
