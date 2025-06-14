@@ -137,6 +137,12 @@
         input[type="file"] {
             display: none;
         }
+        .attach-call-row {
+            display: flex;
+            flex-direction: row;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
         .attach-label {
             display: flex;
             align-items: center;
@@ -146,7 +152,6 @@
             padding: 10px 18px;
             cursor: pointer;
             font-size: 1rem;
-            margin-bottom: 14px;
             width: fit-content;
             transition: background 0.2s;
             border: 1.5px solid #3a3342;
@@ -155,6 +160,31 @@
             background: #a04ed1;
             color: #fff;
             border: 1.5px solid #a04ed1;
+        }
+        .call-label {
+            display: flex;
+            align-items: center;
+            background: #3a3342;
+            color: #fff;
+            border-radius: 18px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: fit-content;
+            transition: background 0.2s;
+            border: 1.5px solid #3a3342;
+        }
+        .call-label:hover {
+            background: #a04ed1;
+            color: #fff;
+            border: 1.5px solid #a04ed1;
+        }
+        .error-message {
+            color: #ff6a6a;
+            font-size: 0.98rem;
+            margin-bottom: 10px;
+            min-height: 18px;
+            display: block;
         }
         button {
             background: #a04ed1;
@@ -217,6 +247,10 @@
             #messages li {
                 padding: 12px 10px 10px 10px;
             }
+            .attach-call-row {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -234,12 +268,14 @@
             <input type="text" id="to_user" placeholder="Кому (UserID)" required autocomplete="off">
             <div id="online-users-dropdown"></div>
             <input type="text" id="message" placeholder="Ваше сообщение">
-            <label for="image_input" class="attach-label">
-                📎 Прикрепить файл
-                <input type="file" id="image_input" accept="image/*">
-            </label>
-            <!-- Кнопка и блок аудиозвонка -->
-            <button id="call-btn" style="margin-bottom:14px;">📞 Позвонить</button>
+            <span id="error-message" class="error-message"></span>
+            <div class="attach-call-row">
+                <label for="image_input" class="attach-label">
+                    📎 Прикрепить файл
+                    <input type="file" id="image_input" accept="image/*">
+                </label>
+                <button id="call-btn" class="call-label" type="button">📞 Позвонить</button>
+            </div>
             <div id="call-controls" style="display:none; flex-direction:column; align-items:center; margin-bottom:14px;">
                 <span id="call-status" style="margin-bottom:10px;"></span>
                 <button id="answer-btn" style="display:none; margin-bottom:8px;">Принять</button>
@@ -253,25 +289,17 @@
             <ul id="messages"></ul>
         </div>
     </div>
-    <div id="log-panel" style="background:#18151c;color:#fff;padding:10px 18px;font-size:0.95rem;max-width:420px;margin:18px auto 0 auto;border-radius:12px;min-height:40px;"></div>
+    <div id="log-panel" style="display:none;background:#18151c;color:#fff;padding:10px 18px;font-size:0.95rem;max-width:420px;margin:18px auto 0 auto;border-radius:12px;min-height:40px;"></div>
     <script>
-        // --- Логирование на сайт ---
-        function logToPanel(msg) {
-            const panel = document.getElementById("log-panel");
-            const time = new Date().toLocaleTimeString();
-            panel.innerHTML += `<div>[${time}] ${msg}</div>`;
-            panel.scrollTop = panel.scrollHeight;
-        }
+        // --- Логирование только в консоль, не на сайт ---
         (function(){
             const origLog = console.log;
             const origErr = console.error;
             console.log = function(...args) {
                 origLog.apply(console, args);
-                logToPanel(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
             };
             console.error = function(...args) {
                 origErr.apply(console, args);
-                logToPanel('<span style="color:#ff6a6a;">' + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ') + '</span>');
             };
         })();
 
@@ -415,13 +443,24 @@
         const rejectBtn = document.getElementById("reject-btn");
         const hangupBtn = document.getElementById("hangup-btn");
         const remoteAudio = document.getElementById("remoteAudio");
+        const errorMessage = document.getElementById("error-message");
 
         callBtn.onclick = async function() {
+            errorMessage.textContent = "";
+            const toUser = document.getElementById("to_user").value.trim();
+            if (!toUser) {
+                errorMessage.textContent = "Введите ID пользователя для звонка.";
+                return;
+            }
+            if (!onlineUsers.includes(toUser)) {
+                errorMessage.textContent = "Пользователь не в сети.";
+                return;
+            }
             callStatus.textContent = "Звонок...";
             callControls.style.display = "flex";
             hangupBtn.style.display = "inline-block";
             isCalling = true;
-            await startCall(document.getElementById("to_user").value.trim());
+            await startCall(toUser);
         };
 
         answerBtn.onclick = async function() {
