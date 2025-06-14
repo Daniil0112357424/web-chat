@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_socketio import SocketIO, emit
 import os
+import sqlite3
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -10,9 +11,41 @@ user_sessions = {}
 chat_history = {}
 online_users = set()  # Для отслеживания онлайн-пользователей
 
-def get_history_key(user1, user2):
-    return tuple(sorted([user1, user2]))
+# --- Галерея: работа с базой SQLite ---
+def get_db_connection():
+    conn = sqlite3.connect('gallery.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
+def init_gallery_db():
+    conn = get_db_connection()
+    conn.execute('CREATE TABLE IF NOT EXISTS gallery (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT UNIQUE)')
+    conn.commit()
+    conn.close()
+
+init_gallery_db()
+
+@app.route('/api/gallery', methods=['GET'])
+def api_get_gallery():
+    conn = get_db_connection()
+    images = conn.execute('SELECT url FROM gallery ORDER BY id DESC').fetchall()
+    conn.close()
+    return jsonify([row['url'] for row in images])
+
+@app.route('/api/gallery', methods=['POST'])
+def api_add_gallery():
+    data = request.get_json()
+    url = data.get('url')
+    if url:
+        conn = get_db_connection()
+        try:
+            conn.execute('INSERT OR IGNORE INTO gallery (url) VALUES (?)', (url,))
+            conn.commit()
+        finally:
+            conn.close()
+    return jsonify({"success": True})
+
+# --- Основные маршруты ---
 @app.route('/gallery')
 def gallery():
     return render_template('gallery.html') # Галерея изображений
@@ -42,6 +75,7 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+# --- Socket.IO обработка чата и звонков ---
 @socketio.on("connect")
 def handle_connect():
     user_id = session.get("user_id")
@@ -104,6 +138,9 @@ def handle_get_history(data):
 @socketio.on("get_online_users")
 def handle_get_online_users():
     emit("online_users", list(online_users))
+
+def get_history_key(user1, user2):
+    return tuple(sorted([user1, user2]))
 
 # --- WebRTC аудиозвонок (сигналинг) ---
 @socketio.on("call_offer")
